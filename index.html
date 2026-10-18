@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steal An Emoji - Ver 1.11</title>
+    <title>Steal An Emoji - Ver 1.2</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
@@ -55,7 +55,7 @@
         <div class="flex items-center gap-6 text-xl font-bold">
             <div>Cash: <span id="cashDisplay" class="text-emerald-400">$10</span></div>
             <div>Income: <span id="cpsDisplay" class="text-emerald-400">$0/s</span></div>
-            <div class="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-700">Ver. 1.11</div>
+            <div class="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-700">Ver. 1.2</div>
         </div>
     </div>
 
@@ -139,7 +139,7 @@
         const ctx = canvas.getContext('2d');
 
         const masterEmojiList = [
-            // COMMONS (8 total)
+            // COMMONS (10 total: Added 😗 and 😙)
             { emoji: '😀', value: 1, cost: 5,   rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '🙂', value: 1, cost: 5,   rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😊', value: 2, cost: 10,  rarity: 'Common', rarityColor: 'text-slate-400' },
@@ -148,8 +148,10 @@
             { emoji: '😄', value: 3, cost: 15,  rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😆', value: 4, cost: 20,  rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😉', value: 4, cost: 20,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😗', value: 5, cost: 25,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😙', value: 5, cost: 25,  rarity: 'Common', rarityColor: 'text-slate-400' },
 
-            // UNCOMMONS (9 total)
+            // UNCOMMONS (10 total: Added 😚 and 🥲)
             { emoji: '🤣', value: 8,  cost: 40,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '🙃', value: 10, cost: 50,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '🫠', value: 12, cost: 60,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
@@ -158,14 +160,17 @@
             { emoji: '😍', value: 25, cost: 125, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '😅', value: 30, cost: 150, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '😂', value: 35, cost: 175, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😗', value: 40, cost: 200, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😚', value: 40, cost: 200, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🥲', value: 45, cost: 225, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
 
-            // RARES (🤩 and 😘)
+            // RARES (3 total: 🤩, 😘, and 😜)
             { emoji: '🤩', value: 200, cost: 1000, rarity: 'Rare', rarityColor: 'text-sky-400' },
             { emoji: '😘', value: 250, cost: 1250, rarity: 'Rare', rarityColor: 'text-sky-400' },
+            { emoji: '😜', value: 300, cost: 1500, rarity: 'Rare', rarityColor: 'text-sky-400' },
 
-            // EPIC (🤑)
-            { emoji: '🤑', value: 500, cost: 2500, rarity: 'Epic', rarityColor: 'text-purple-400' }
+            // EPICS (2 total: 🤑 and 🤪)
+            { emoji: '🤑', value: 500, cost: 2500, rarity: 'Epic', rarityColor: 'text-purple-400' },
+            { emoji: '🤪', value: 600, cost: 3000, rarity: 'Epic', rarityColor: 'text-purple-400' }
         ];
 
         let unlockedEmojis = new Set();
@@ -327,6 +332,10 @@
             setInterval(() => {
                 if (!gameStarted) return;
                 
+                // Pause spawning when tab is hidden or Emojipedia modal is open
+                const emojipediaOpen = !document.getElementById('emojipediaModal').classList.contains('hidden');
+                if (document.hidden || emojipediaOpen) return;
+                
                 let roll = Math.random() * 100;
                 let chosenPool;
 
@@ -470,24 +479,31 @@
             });
         }
 
+        let lastTime = performance.now();
+
         function update() {
             if (!gameStarted) return;
+
+            let now = performance.now();
+            let dt = (now - lastTime) / 16.666; // Delta factor relative to 60fps
+            if (dt > 4) dt = 1; // Cap delta if tab/game was paused so emojis don't warp or stack
+            lastTime = now;
 
             // Block movement if Emojipedia modal is open
             const emojipediaOpen = !document.getElementById('emojipediaModal').classList.contains('hidden');
             if (emojipediaOpen) return;
 
-            if ((keys['w'] || keys['arrowup']) && player.y > 35) player.y -= player.speed;
-            if ((keys['s'] || keys['arrowdown']) && player.y < canvas.height - 35) player.y += player.speed;
-            if ((keys['a'] || keys['arrowleft']) && player.x > 35) player.x -= player.speed;
-            if ((keys['d'] || keys['arrowright']) && player.x < canvas.width - 35) player.x += player.speed;
+            if ((keys['w'] || keys['arrowup']) && player.y > 35) player.y -= player.speed * dt;
+            if ((keys['s'] || keys['arrowdown']) && player.y < canvas.height - 35) player.y += player.speed * dt;
+            if ((keys['a'] || keys['arrowleft']) && player.x > 35) player.x -= player.speed * dt;
+            if ((keys['d'] || keys['arrowright']) && player.x < canvas.width - 35) player.x += player.speed * dt;
 
             nearbyBuyEmoji = null;
             let closestDist = Infinity;
 
             for (let i = carpetEmojis.length - 1; i >= 0; i--) {
                 let e = carpetEmojis[i];
-                e.y += e.speed;
+                e.y += e.speed * dt;
 
                 let dist = Math.hypot(player.x - e.x, player.y - e.y);
                 if (dist < 65 && dist < closestDist) {
@@ -506,7 +522,7 @@
                 let isTypeMaxed = existingItem && existingItem.count >= 10;
 
                 if (totalCount < 100 && !isTypeMaxed && cash >= nearbyBuyEmoji.cost) {
-                    eHoldTimer++;
+                    eHoldTimer += dt;
                     if (eHoldTimer >= 60) {
                         cash -= nearbyBuyEmoji.cost;
                         addEmojiToVault(nearbyBuyEmoji);
@@ -539,7 +555,7 @@
             }
 
             if (nearbySellIndex !== -1 && keys['f']) {
-                fHoldTimer++;
+                fHoldTimer += dt;
                 if (fHoldTimer >= 120) {
                     let item = vault[nearbySellIndex];
                     let sellPrice = Math.floor(item.cost * 0.9);
