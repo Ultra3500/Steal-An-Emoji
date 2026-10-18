@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steal An Emoji</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            user-select: none;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.95);
+            border-radius: 12px;
+        }
+        /* Custom scrollbar for Emojipedia modal */
+        .custom-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen font-sans relative">
+
+    <!-- Top Info Bar -->
+    <div class="w-[1200px] flex justify-between items-center mb-2 px-6 py-2.5 bg-slate-800/90 rounded-xl border border-slate-700 shadow-xl backdrop-blur-md">
+        <!-- Emojipedia Button in Top Left -->
+        <button onclick="toggleEmojipedia()" class="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-1.5 rounded-lg border border-amber-300 shadow cursor-pointer transition-all active:scale-95">
+            <span>📖</span> Emojipedia
+        </button>
+        
+        <!-- Golden Event Countdown Header (5 min timer) -->
+        <div class="flex items-center gap-2 bg-slate-900/80 px-4 py-1.5 rounded-lg border border-slate-700">
+            <span class="text-sm font-bold text-slate-300">🌟 Golden Carpet:</span>
+            <span id="goldenTimerDisplay" class="text-amber-400 font-extrabold text-sm">5:00</span>
+        </div>
+
+        <!-- Cash & Income HUD -->
+        <div class="flex gap-8 text-xl font-bold">
+            <div>Cash: <span id="cashDisplay" class="text-emerald-400">$10</span></div>
+            <div>Income: <span id="cpsDisplay" class="text-emerald-400">$0/s</span></div>
+        </div>
+    </div>
+
+    <!-- Main Game Canvas Area -->
+    <div class="relative">
+        <canvas id="gameCanvas" width="1200" height="700"></canvas>
+
+        <!-- Emojipedia Modal -->
+        <div id="emojipediaModal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center rounded-xl z-20 p-6">
+            <div class="w-full max-w-2xl bg-slate-900 border-2 border-amber-400/50 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[85vh]">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
+                    <h2 class="text-2xl font-black text-amber-400 flex items-center gap-2">📖 EMOJIPEDIA</h2>
+                    <button onclick="toggleEmojipedia()" class="text-slate-400 hover:text-white text-2xl font-bold cursor-pointer px-2">✕</button>
+                </div>
+                
+                <!-- Grid list of all game emojis -->
+                <div id="emojipediaGrid" class="grid grid-cols-4 sm:grid-cols-6 gap-x-4 gap-y-7 pt-2 overflow-y-auto custom-scroll p-2">
+                    <!-- Populated dynamically via JS -->
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-800 text-center text-xs text-slate-400">
+                    Collect emojis to unlock them in your Emojipedia!
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Screen Modal -->
+        <div id="setupModal" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center rounded-xl z-10 transition-opacity duration-300 p-6 overflow-y-auto">
+            <h2 class="text-3xl font-extrabold text-amber-400 mb-1">WELCOME TO STEAL AN EMOJI</h2>
+            <p class="text-slate-400 mb-6 text-xs">Customize your character and start your vault empire!</p>
+            
+            <div class="w-full max-w-md space-y-5">
+                <!-- 1. Name Input -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Your Name</label>
+                    <input type="text" id="playerNameInput" value="Player" maxlength="15" 
+                           class="w-full bg-slate-800 border-2 border-slate-600 focus:border-amber-400 text-white rounded-lg px-4 py-2 text-center font-bold outline-none">
+                </div>
+
+                <!-- 2. Gender & Skin Tone Selector -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Choose Your Avatar</label>
+                    
+                    <div class="flex gap-2 mb-2 justify-center">
+                        <button onclick="setGender('neutral')" id="btn-neutral" class="px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded">🧍 Neutral</button>
+                        <button onclick="setGender('male')" id="btn-male" class="px-3 py-1 bg-slate-700 text-xs font-bold rounded">🧍‍♂️ Male</button>
+                        <button onclick="setGender('female')" id="btn-female" class="px-3 py-1 bg-slate-700 text-xs font-bold rounded">🧍‍♀️ Female</button>
+                    </div>
+
+                    <div class="grid grid-cols-6 gap-2 bg-slate-800 p-3 rounded-lg border border-slate-700 justify-items-center" id="skinToneContainer">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- 3. Starter Emoji Choice -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Choose Free Starter Emoji</label>
+                    <div class="flex gap-4 justify-center">
+                        <button onclick="chooseStarter('😀', this)" class="starter-btn p-3 bg-slate-800 hover:bg-slate-700 border-2 border-amber-400 rounded-xl text-3xl cursor-pointer">😀</button>
+                        <button onclick="chooseStarter('🙂', this)" class="starter-btn p-3 bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl text-3xl cursor-pointer">🙂</button>
+                        <button onclick="chooseStarter('😊', this)" class="starter-btn p-3 bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 rounded-xl text-3xl cursor-pointer">😊</button>
+                    </div>
+                </div>
+
+                <!-- Start Button -->
+                <button onclick="startGame()" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-black font-black text-lg rounded-xl shadow-lg cursor-pointer transform active:scale-95 transition-all">
+                    START PLAYING 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Footer -->
+    <div class="w-[1200px] mt-2 flex justify-between text-xs text-slate-400 px-2">
+        <p>🎮 Move: <span class="text-white font-bold">WASD / Arrows</span> | Click Vault Title to Rename</p>
+        <p>🛒 Hold <span class="text-amber-400 font-bold">[E] 1s</span> to Buy Carpet Emoji | Hold <span class="text-rose-400 font-bold">[F] 2s</span> in Vault to Sell (10% Loss)</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Master List of All Game Emojis (6 Common, 6 Uncommon & 6 Rare)
+        const masterEmojiList = [
+            // COMMON (Gray Label)
+            { emoji: '😀', value: 1, cost: 5,   rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '🙂', value: 1, cost: 5,   rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😊', value: 2, cost: 10,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😃', value: 2, cost: 10,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😁', value: 3, cost: 15,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😄', value: 3, cost: 15,  rarity: 'Common', rarityColor: 'text-slate-400' },
+
+            // UNCOMMON (Green Label)
+            { emoji: '🤣', value: 8,  cost: 40,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🙃', value: 10, cost: 50,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🫠', value: 12, cost: 60,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😇', value: 15, cost: 75,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🥰', value: 20, cost: 100, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😍', value: 25, cost: 125, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+
+            // RARE (Blue Label)
+            { emoji: '😎', value: 50,  cost: 250, rarity: 'Rare', rarityColor: 'text-sky-400' },
+            { emoji: '🤓', value: 65,  cost: 325, rarity: 'Rare', rarityColor: 'text-sky-400' },
+            { emoji: '🤖', value: 80,  cost: 400, rarity: 'Rare', rarityColor: 'text-sky-400' },
+            { emoji: '🚀', value: 100, cost: 500, rarity: 'Rare', rarityColor: 'text-sky-400' },
+            { emoji: '🦄', value: 125, cost: 625, rarity: 'Rare', rarityColor: 'text-sky-400' },
+            { emoji: '👑', value: 150, cost: 750, rarity: 'Rare', rarityColor: 'text-sky-400' }
+        ];
+
+        // Track historically unlocked emojis for Emojipedia
+        let unlockedEmojis = new Set();
+
+        // Avatar definitions
+        const avatars = {
+            neutral: ['🧍', '🧍🏻', '🧍🏼', '🧍🏽', '🧍🏾', '🧍🏿'],
+            male:    ['🧍‍♂️', '🧍🏻‍♂️', '🧍🏼‍♂️', '🧍🏽‍♂️', '🧍🏾‍♂️', '🧍🏿‍♂️'],
+            female:  ['🧍‍♀️', '🧍🏻‍♀️', '🧍🏼‍♀️', '🧍🏽‍♀️', '🧍🏾‍♀️', '🧍🏿‍♀️']
+        };
+
+        let selectedGender = 'neutral';
+        let selectedAvatar = '🧍';
+        let selectedStarter = '😀';
+
+        // Game State
+        let gameStarted = false;
+        let rawPlayerName = "Player";
+        let vaultTitle = "Player's Vault";
+        let cash = 10;
+        let cps = 0;
+
+        // Player configuration
+        let player = {
+            x: 600,
+            y: 550,
+            size: 42,
+            speed: 5.0,
+            emoji: '🧍'
+        };
+
+        let keys = {};
+        let vault = [];
+        let carpetEmojis = [];
+        
+        let nearbyBuyEmoji = null;
+        let eHoldTimer = 0;
+        
+        let nearbySellIndex = -1;
+        let fHoldTimer = 0;
+
+        // Golden Event State (5 min interval = 300 seconds)
+        let goldenTimer = 300; 
+        let isGoldenEvent = false;
+
+        // Keyboard listeners
+        window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+        window.addEventListener('keyup', e => {
+            let key = e.key.toLowerCase();
+            keys[key] = false;
+            if (key === 'e') eHoldTimer = 0;
+            if (key === 'f') fHoldTimer = 0;
+        });
+
+        // Click Canvas Event to Rename Vault
+        canvas.addEventListener('click', e => {
+            if (!gameStarted) return;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            if (clickX >= 20 && clickX <= 320 && clickY >= 40 && clickY <= 90) {
+                let newName = prompt("Enter your new name:", rawPlayerName);
+                if (newName !== null && newName.trim() !== "") {
+                    rawPlayerName = newName.trim();
+                    vaultTitle = formatPossessive(rawPlayerName);
+                }
+            }
+        });
+
+        function updateSkinTones() {
+            const container = document.getElementById('skinToneContainer');
+            container.innerHTML = '';
+            avatars[selectedGender].forEach(emoji => {
+                let btn = document.createElement('button');
+                btn.className = `p-2 text-2xl rounded-lg cursor-pointer border-2 ${selectedAvatar === emoji ? 'border-amber-400 bg-slate-700' : 'border-transparent hover:bg-slate-700'}`;
+                btn.innerText = emoji;
+                btn.onclick = () => {
+                    selectedAvatar = emoji;
+                    updateSkinTones();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function setGender(gender) {
+            selectedGender = gender;
+            selectedAvatar = avatars[gender][0];
+            ['neutral', 'male', 'female'].forEach(g => {
+                document.getElementById(`btn-${g}`).className = g === gender ? 'px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded' : 'px-3 py-1 bg-slate-700 text-xs font-bold rounded';
+            });
+            updateSkinTones();
+        }
+
+        function chooseStarter(emoji, btn) {
+            selectedStarter = emoji;
+            document.querySelectorAll('.starter-btn').forEach(b => {
+                b.classList.remove('border-amber-400');
+                b.classList.add('border-slate-600');
+            });
+            btn.classList.remove('border-slate-600');
+            btn.classList.add('border-amber-400');
+        }
+
+        updateSkinTones();
+
+        function formatPossessive(name) {
+            let trimmed = name.trim();
+            if (!trimmed) return "Player's Vault";
+            return trimmed.endsWith('s') || trimmed.endsWith('S') ? `${trimmed}' Vault` : `${trimmed}'s Vault`;
+        }
+
+        function addEmojiToVault(emojiObj) {
+            unlockedEmojis.add(emojiObj.emoji);
+
+            let existing = vault.find(item => item.emoji === emojiObj.emoji);
+            if (existing) {
+                if (existing.count < 10) {
+                    existing.count++;
+                    return true;
+                }
+                return false;
+            } else {
+                vault.push({
+                    emoji: emojiObj.emoji,
+                    value: emojiObj.value,
+                    cost: emojiObj.cost,
+                    count: 1
+                });
+                return true;
+            }
+        }
+
+        function getTotalEmojiCount() {
+            return vault.reduce((sum, item) => sum + item.count, 0);
+        }
+
+        function startGame() {
+            rawPlayerName = document.getElementById('playerNameInput').value || "Player";
+            vaultTitle = formatPossessive(rawPlayerName);
+            player.emoji = selectedAvatar;
+
+            let starterData = masterEmojiList.find(m => m.emoji === selectedStarter) || { emoji: selectedStarter, value: 1, cost: 5 };
+            addEmojiToVault(starterData);
+
+            const modal = document.getElementById('setupModal');
+            modal.style.opacity = '0';
+            setTimeout(() => modal.style.display = 'none', 300);
+
+            gameStarted = true;
+            startConveyor();
+            startIncomeLoop();
+            startGoldenTimerLoop();
+        }
+
+        // Conveyor Belt Spawner
+        function startConveyor() {
+            const commonPool = masterEmojiList.filter(e => e.rarity === 'Common');
+            const uncommonPool = masterEmojiList.filter(e => e.rarity === 'Uncommon');
+
+            setInterval(() => {
+                if (!gameStarted) return;
+                
+                let roll = Math.random();
+                let chosenPool;
+
+                if (!isGoldenEvent) {
+                    // Normal Carpet: 90% Common, 10% Uncommon
+                    chosenPool = roll < 0.10 ? uncommonPool : commonPool;
+                } else {
+                    // Golden Carpet: 90% Uncommon, 10% Common
+                    chosenPool = roll < 0.10 ? commonPool : uncommonPool;
+                }
+
+                let randomChoice = chosenPool[Math.floor(Math.random() * chosenPool.length)];
+                
+                carpetEmojis.push({
+                    x: canvas.width / 2,
+                    y: -30,
+                    speed: 1.0,
+                    ...randomChoice
+                });
+            }, 2000);
+        }
+
+        // Passive Cash Income Loop
+        function startIncomeLoop() {
+            setInterval(() => {
+                if (!gameStarted) return;
+                let income = vault.reduce((sum, item) => sum + (item.value * item.count), 0);
+                cash += income;
+                cps = income;
+
+                document.getElementById('cashDisplay').innerText = `$${cash}`;
+                document.getElementById('cpsDisplay').innerText = `$${cps}/s`;
+            }, 1000);
+        }
+
+        // 5-Minute Golden Carpet Event Timer
+        function startGoldenTimerLoop() {
+            setInterval(() => {
+                if (!gameStarted) return;
+
+                goldenTimer--;
+                if (goldenTimer <= 0) {
+                    if (!isGoldenEvent) {
+                        isGoldenEvent = true;
+                        goldenTimer = 60; // Event lasts 1 minute
+                    } else {
+                        isGoldenEvent = false;
+                        goldenTimer = 300; // 5 minutes (300 seconds)
+                    }
+                }
+
+                updateGoldenTimerHUD();
+            }, 1000);
+        }
+
+        function updateGoldenTimerHUD() {
+            let mins = Math.floor(goldenTimer / 60);
+            let secs = goldenTimer % 60;
+            let timeFormatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            
+            const timerDisplay = document.getElementById('goldenTimerDisplay');
+            if (isGoldenEvent) {
+                timerDisplay.innerText = `EVENT ACTIVE! (${timeFormatted})`;
+                timerDisplay.className = "text-amber-300 font-extrabold text-sm animate-pulse";
+            } else {
+                timerDisplay.innerText = timeFormatted;
+                timerDisplay.className = "text-amber-400 font-extrabold text-sm";
+            }
+        }
+
+        // Toggle Emojipedia Modal
+        function toggleEmojipedia() {
+            const modal = document.getElementById('emojipediaModal');
+            if (modal.classList.contains('hidden')) {
+                renderEmojipedia();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Populate Emojipedia Grid
+        function renderEmojipedia() {
+            const container = document.getElementById('emojipediaGrid');
+            container.innerHTML = '';
+
+            masterEmojiList.forEach(item => {
+                let isEverUnlocked = unlockedEmojis.has(item.emoji);
+                let vaultItem = vault.find(v => v.emoji === item.emoji);
+                let currentCount = vaultItem ? vaultItem.count : 0;
+
+                let wrapper = document.createElement('div');
+                wrapper.className = "relative flex flex-col items-center pt-3";
+
+                let rarityLabel = `<span class="absolute -top-3 text-center text-[10px] font-black uppercase tracking-wider ${item.rarityColor}">${item.rarity}</span>`;
+
+                let card = document.createElement('div');
+                card.className = `relative w-full aspect-square flex items-center justify-center rounded-xl border-2 transition-all ${
+                    isEverUnlocked ? 'bg-slate-800 border-slate-700 shadow-md' : 'bg-slate-950/60 border-slate-900 opacity-40'
+                }`;
+
+                if (isEverUnlocked) {
+                    card.innerHTML = `
+                        <span class="text-4xl my-1">${item.emoji}</span>
+                        ${currentCount > 0 ? `<span class="absolute top-1 right-1.5 text-emerald-400 text-[11px] font-black">✓</span>` : ''}
+                        ${currentCount > 1 ? `<span class="absolute bottom-1 right-[22%] text-slate-300 text-[11px] font-black translate-x-1">x${currentCount}</span>` : ''}
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <span class="text-4xl my-1 filter grayscale contrast-200 opacity-20">❓</span>
+                    `;
+                }
+
+                wrapper.innerHTML = rarityLabel;
+                wrapper.appendChild(card);
+                container.appendChild(wrapper);
+            });
+        }
+
+        // Update Logic
+        function update() {
+            if (!gameStarted) return;
+
+            // Player Movement
+            if ((keys['w'] || keys['arrowup']) && player.y > 35) player.y -= player.speed;
+            if ((keys['s'] || keys['arrowdown']) && player.y < canvas.height - 35) player.y += player.speed;
+            if ((keys['a'] || keys['arrowleft']) && player.x > 35) player.x -= player.speed;
+            if ((keys['d'] || keys['arrowright']) && player.x < canvas.width - 35) player.x += player.speed;
+
+            // 1. CARPET EMOJI BUY LOGIC
+            nearbyBuyEmoji = null;
+            let closestDist = Infinity;
+
+            for (let i = carpetEmojis.length - 1; i >= 0; i--) {
+                let e = carpetEmojis[i];
+                e.y += e.speed;
+
+                let dist = Math.hypot(player.x - e.x, player.y - e.y);
+                if (dist < 65 && dist < closestDist) {
+                    closestDist = dist;
+                    nearbyBuyEmoji = e;
+                }
+
+                if (e.y > canvas.height + 40) {
+                    carpetEmojis.splice(i, 1);
+                }
+            }
+
+            if (nearbyBuyEmoji && keys['e']) {
+                let totalCount = getTotalEmojiCount();
+                let existingItem = vault.find(v => v.emoji === nearbyBuyEmoji.emoji);
+                let isTypeMaxed = existingItem && existingItem.count >= 10;
+
+                if (totalCount < 50 && !isTypeMaxed && cash >= nearbyBuyEmoji.cost) {
+                    eHoldTimer++;
+                    if (eHoldTimer >= 60) {
+                        cash -= nearbyBuyEmoji.cost;
+                        addEmojiToVault(nearbyBuyEmoji);
+
+                        let idx = carpetEmojis.indexOf(nearbyBuyEmoji);
+                        if (idx !== -1) carpetEmojis.splice(idx, 1);
+
+                        eHoldTimer = 0;
+                        nearbyBuyEmoji = null;
+                        document.getElementById('cashDisplay').innerText = `$${cash}`;
+                    }
+                }
+            } else if (!nearbyBuyEmoji || !keys['e']) {
+                if (!nearbyBuyEmoji) eHoldTimer = 0;
+            }
+
+            // 2. VAULT EMOJI SELL LOGIC
+            nearbySellIndex = -1;
+            if (player.x >= 20 && player.x <= 320 && player.y >= 40 && player.y <= 640) {
+                vault.forEach((item, index) => {
+                    let col = index % 5;
+                    let row = Math.floor(index / 5);
+                    let vx = 35 + col * 54 + 23;
+                    let vy = 100 + row * 54 + 23;
+
+                    let dist = Math.hypot(player.x - vx, player.y - vy);
+                    if (dist < 32) {
+                        nearbySellIndex = index;
+                    }
+                });
+            }
+
+            if (nearbySellIndex !== -1 && keys['f']) {
+                fHoldTimer++;
+                if (fHoldTimer >= 120) {
+                    let item = vault[nearbySellIndex];
+                    let sellPrice = Math.floor(item.cost * 0.9);
+                    cash += sellPrice;
+
+                    item.count--;
+                    if (item.count <= 0) {
+                        vault.splice(nearbySellIndex, 1);
+                    }
+
+                    fHoldTimer = 0;
+                    nearbySellIndex = -1;
+                    document.getElementById('cashDisplay').innerText = `$${cash}`;
+                }
+            } else if (nearbySellIndex === -1 || !keys['f']) {
+                if (nearbySellIndex === -1) fHoldTimer = 0;
+            }
+        }
+
+        // Main Render Loop
+        function draw() {
+            // Background Floor
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // =========================================
+            // CARPET DESIGN
+            // =========================================
+            const carpetWidth = 140;
+            const carpetX = canvas.width / 2 - (carpetWidth / 2);
+
+            const borderDark = isGoldenEvent ? '#78350f' : '#6b0202';
+            const carpetMain = isGoldenEvent ? '#f59e0b' : '#dc2626';
+            const lineDetail = isGoldenEvent ? '#d97706' : '#b91c1c';
+
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(carpetX - 14, 0, carpetWidth + 28, canvas.height);
+
+            ctx.fillStyle = borderDark;
+            ctx.fillRect(carpetX - 7, 0, carpetWidth + 14, canvas.height);
+
+            ctx.fillStyle = carpetMain;
+            ctx.fillRect(carpetX, 0, carpetWidth, canvas.height);
+
+            ctx.strokeStyle = lineDetail;
+            ctx.lineWidth = 2;
+            for (let y = 0; y < canvas.height; y += 30) {
+                ctx.beginPath();
+                ctx.moveTo(carpetX, y);
+                ctx.lineTo(carpetX + carpetWidth, y);
+                ctx.stroke();
+            }
+
+            // =========================================
+            // EXPANDED VAULT ZONE
+            // =========================================
+            ctx.fillStyle = 'rgba(30, 41, 59, 0.85)';
+            ctx.fillRect(20, 40, 300, 620);
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(20, 40, 300, 620);
+
+            // Vault Header
+            let totalCount = getTotalEmojiCount();
+            ctx.fillStyle = '#93c5fd';
+            ctx.font = 'bold 15px sans-serif';
+            ctx.fillText(`🛡️ ${vaultTitle.toUpperCase()}`, 35, 68);
+            
+            ctx.fillStyle = totalCount >= 50 ? '#ef4444' : '#94a3b8';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText(`Capacity: ${totalCount}/50`, 35, 84);
+
+            // Render Stored Vault Emojis
+            vault.forEach((item, index) => {
+                let col = index % 5;
+                let row = Math.floor(index / 5);
+                let vx = 35 + col * 54;
+                let vy = 100 + row * 54;
+                
+                ctx.fillStyle = (index === nearbySellIndex) ? '#475569' : '#334155';
+                ctx.fillRect(vx, vy, 46, 46);
+                
+                ctx.font = '26px sans-serif';
+                ctx.fillText(item.emoji, vx + 6, vy + 32);
+
+                if (item.count > 1) {
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.font = 'bold 11px sans-serif';
+                    ctx.fillText(`x${item.count}`, vx + 22, vy + 42);
+                }
+            });
+
+            // =========================================
+            // CARPET EMOJIS
+            // =========================================
+            carpetEmojis.forEach(e => {
+                ctx.font = '36px sans-serif';
+                ctx.fillText(e.emoji, e.x - 18, e.y + 12);
+
+                ctx.fillStyle = isGoldenEvent ? '#fbbf24' : '#10b981';
+                ctx.font = 'bold 13px sans-serif';
+                ctx.fillText(`$${e.cost}`, e.x - 14, e.y + 32);
+            });
+
+            // =========================================
+            // PLAYER
+            // =========================================
+            ctx.font = '54px sans-serif';
+            ctx.fillText(player.emoji, player.x - 27, player.y + 18);
+
+            // =========================================
+            // INTERACTION PROMPTS
+            // =========================================
+            if (nearbyBuyEmoji) {
+                let totalCount = getTotalEmojiCount();
+                let existingItem = vault.find(v => v.emoji === nearbyBuyEmoji.emoji);
+                let isTypeMaxed = existingItem && existingItem.count >= 10;
+                let isCapReached = totalCount >= 50;
+                let afford = cash >= nearbyBuyEmoji.cost;
+
+                let promptText = 'HOLD [E] BUY';
+                let isBuyable = true;
+
+                if (isCapReached) {
+                    promptText = 'VAULT FULL (SELL 1)';
+                    isBuyable = false;
+                } else if (isTypeMaxed) {
+                    promptText = 'MAX x10 REACHED';
+                    isBuyable = false;
+                } else if (!afford) {
+                    promptText = 'NEED MORE $';
+                    isBuyable = false;
+                }
+
+                ctx.fillStyle = isBuyable ? '#f59e0b' : '#ef4444';
+                ctx.fillRect(nearbyBuyEmoji.x - 60, nearbyBuyEmoji.y - 48, 120, 24);
+                
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(promptText, nearbyBuyEmoji.x, nearbyBuyEmoji.y - 32);
+                ctx.textAlign = 'left';
+
+                if (isBuyable && eHoldTimer > 0) {
+                    ctx.fillStyle = '#22c55e';
+                    ctx.fillRect(nearbyBuyEmoji.x - 60, nearbyBuyEmoji.y - 24, (eHoldTimer / 60) * 120, 4);
+                }
+            }
+
+            if (nearbySellIndex !== -1) {
+                let item = vault[nearbySellIndex];
+                let sellPrice = Math.floor(item.cost * 0.9);
+                let col = nearbySellIndex % 5;
+                let row = Math.floor(nearbySellIndex / 5);
+                let vx = 35 + col * 54 + 23;
+                let vy = 100 + row * 54 - 15;
+
+                ctx.fillStyle = '#f43f5e';
+                ctx.fillRect(vx - 55, vy - 15, 110, 24);
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`HOLD [F] SELL +$${sellPrice}`, vx, vy);
+                ctx.textAlign = 'left';
+
+                if (fHoldTimer > 0) {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(vx - 55, vy + 9, (fHoldTimer / 120) * 110, 4);
+                }
+            }
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>
