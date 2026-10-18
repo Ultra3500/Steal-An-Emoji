@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steal An Emoji</title>
+    <title>Steal An Emoji - Ver 1.11</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
@@ -55,7 +55,7 @@
         <div class="flex items-center gap-6 text-xl font-bold">
             <div>Cash: <span id="cashDisplay" class="text-emerald-400">$10</span></div>
             <div>Income: <span id="cpsDisplay" class="text-emerald-400">$0/s</span></div>
-            <div class="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-700">Ver. 1.1</div>
+            <div class="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-700">Ver. 1.11</div>
         </div>
     </div>
 
@@ -162,7 +162,10 @@
 
             // RARES (🤩 and 😘)
             { emoji: '🤩', value: 200, cost: 1000, rarity: 'Rare', rarityColor: 'text-sky-400' },
-            { emoji: '😘', value: 250, cost: 1250, rarity: 'Rare', rarityColor: 'text-sky-400' }
+            { emoji: '😘', value: 250, cost: 1250, rarity: 'Rare', rarityColor: 'text-sky-400' },
+
+            // EPIC (🤑)
+            { emoji: '🤑', value: 500, cost: 2500, rarity: 'Epic', rarityColor: 'text-purple-400' }
         ];
 
         let unlockedEmojis = new Set();
@@ -318,17 +321,33 @@
         function startConveyor() {
             const commonPool = masterEmojiList.filter(e => e.rarity === 'Common');
             const uncommonPool = masterEmojiList.filter(e => e.rarity === 'Uncommon');
+            const rarePool = masterEmojiList.filter(e => e.rarity === 'Rare');
+            const epicPool = masterEmojiList.filter(e => e.rarity === 'Epic');
 
             setInterval(() => {
                 if (!gameStarted) return;
                 
-                let roll = Math.random();
+                let roll = Math.random() * 100;
                 let chosenPool;
 
                 if (!isGoldenEvent) {
-                    chosenPool = roll < 0.10 ? uncommonPool : commonPool;
+                    // Normal Carpet: 85% Common, 10% Uncommon, 5% Rare
+                    if (roll < 85) {
+                        chosenPool = commonPool;
+                    } else if (roll < 95) {
+                        chosenPool = uncommonPool;
+                    } else {
+                        chosenPool = rarePool;
+                    }
                 } else {
-                    chosenPool = roll < 0.10 ? commonPool : uncommonPool;
+                    // Golden Carpet: 85% Uncommon, 10% Rare, 5% Epic
+                    if (roll < 85) {
+                        chosenPool = uncommonPool;
+                    } else if (roll < 95) {
+                        chosenPool = rarePool;
+                    } else {
+                        chosenPool = epicPool;
+                    }
                 }
 
                 let randomChoice = chosenPool[Math.floor(Math.random() * chosenPool.length)];
@@ -405,7 +424,8 @@
             const rarities = [
                 { name: 'Common', color: 'text-slate-400' },
                 { name: 'Uncommon', color: 'text-emerald-400' },
-                { name: 'Rare', color: 'text-sky-400' }
+                { name: 'Rare', color: 'text-sky-400' },
+                { name: 'Epic', color: 'text-purple-400' }
             ];
 
             rarities.forEach(r => {
@@ -606,9 +626,20 @@
                 ctx.font = '36px sans-serif';
                 ctx.fillText(e.emoji, e.x - 18, e.y + 12);
 
+                let isNew = !unlockedEmojis.has(e.emoji);
+                let priceText = `$${e.cost}`;
+
                 ctx.fillStyle = isGoldenEvent ? '#fbbf24' : '#10b981';
                 ctx.font = 'bold 13px sans-serif';
-                ctx.fillText(`$${e.cost}`, e.x - 14, e.y + 32);
+
+                if (isNew) {
+                    ctx.fillText(priceText, e.x - 28, e.y + 32);
+                    ctx.fillStyle = '#22c55e';
+                    ctx.font = 'extrabold 12px sans-serif';
+                    ctx.fillText('[NEW]', e.x + 8, e.y + 32);
+                } else {
+                    ctx.fillText(priceText, e.x - 14, e.y + 32);
+                }
             });
 
             ctx.font = '54px sans-serif';
