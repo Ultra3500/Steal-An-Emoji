@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steal An Emoji - Ver 1.53</title>
+    <title>Steal An Emoji - Ver 1.6</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
@@ -79,7 +79,7 @@
             
             <!-- Interactive Changelog Button -->
             <button onclick="toggleChangelog()" class="text-xs font-mono text-slate-300 bg-slate-900 hover:bg-slate-700 px-3 py-1.5 rounded border border-blue-500/50 hover:border-blue-400 cursor-pointer transition-all shadow active:scale-95 flex items-center gap-1.5">
-                <span>Ver. 1.53</span>
+                <span>Ver. 1.6</span>
             </button>
         </div>
     </div>
@@ -94,21 +94,23 @@
                 <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
                     <div class="flex items-center gap-3">
                         <h2 class="text-2xl font-black text-white flex items-center gap-2">Changelog:</h2>
-                        <span class="bg-blue-600 text-white text-xs font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wide border border-blue-400 shadow">Minor Update</span>
+                        <span class="bg-blue-600 text-white text-xs font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wide border border-blue-400 shadow">Major Update</span>
                     </div>
                     <button onclick="toggleChangelog()" class="text-slate-400 hover:text-white text-2xl font-bold cursor-pointer px-2">✕</button>
                 </div>
                 
                 <div class="flex flex-col gap-3 text-slate-300 text-sm overflow-y-auto custom-scroll p-1">
-                    <div class="font-bold text-amber-400 text-base">Ver. 1.53 Patch Notes:</div>
+                    <div class="font-bold text-amber-400 text-base">Ver. 1.6 Patch Notes:</div>
                     <ul class="list-disc list-inside space-y-1.5 text-slate-300">
-                        <li><strong class="text-white">Rarity Rebalance:</strong> Halo emoji (😇) promoted from Uncommon to <span class="text-sky-400 font-bold">Rare</span>.</li>
-                        <li><strong class="text-white">UI Badge Fix:</strong> Shifted vault slot stack quantity numbers (`x2`, `x3`, etc.) to the bottom-right corner.</li>
+                        <li><strong class="text-white">Centered Spawn:</strong> Player now spawns in the exact middle of the Red Carpet (`x: 600`).</li>
+                        <li><strong class="text-white">Custom Audio Files:</strong> Integrated `buy.mp3` and `sell.mp3` audio file playback for purchases and sales.</li>
+                        <li><strong class="text-white">Clean Empty Slots:</strong> Empty vault slots no longer display floating prompt boxes or glitched progress bars.</li>
+                        <li><strong class="text-white">Quantity Label Alignment:</strong> Nudged `x(number)` quantity badges further right to align perfectly in slot corners.</li>
                     </ul>
                 </div>
 
                 <div class="mt-5 pt-3 border-t border-slate-800 text-center text-xs text-slate-500">
-                    Steal An Emoji • Ver. 1.53
+                    Steal An Emoji • Ver. 1.6
                 </div>
             </div>
         </div>
@@ -172,6 +174,28 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Local Audio File Handlers
+        const buyAudio = new Audio('buy.mp3');
+        const sellAudio = new Audio('sell.mp3');
+
+        function playBuySound() {
+            try {
+                buyAudio.currentTime = 0;
+                buyAudio.play().catch(e => console.log("Audio play blocked/missing:", e));
+            } catch (err) {
+                console.error("Buy audio error:", err);
+            }
+        }
+
+        function playSellSound() {
+            try {
+                sellAudio.currentTime = 0;
+                sellAudio.play().catch(e => console.log("Audio play blocked/missing:", e));
+            } catch (err) {
+                console.error("Sell audio error:", err);
+            }
+        }
 
         const masterEmojiList = [
             // COMMONS (Gray)
@@ -247,8 +271,9 @@
         let cash = 10;
         let cps = 0;
 
+        // Player spawns at middle of Red Carpet
         let player = {
-            x: 650,
+            x: 600,
             y: 550,
             size: 56,
             speed: 5.0,
@@ -258,7 +283,6 @@
         let companionPet = null;
 
         let keys = {};
-        // 50 total slots in vault
         let vault = [];
         let carpetEmojis = [];
         
@@ -383,6 +407,7 @@
             rawPlayerName = document.getElementById('playerNameInput').value || "Player";
             vaultTitle = formatPossessive(rawPlayerName);
             player.emoji = selectedAvatar;
+            player.x = canvas.width / 2;
 
             let starterData = masterEmojiList.find(m => m.emoji === selectedStarter) || { emoji: selectedStarter, value: 1, cost: 5 };
             addEmojiToVault(starterData);
@@ -398,7 +423,7 @@
             startGoldenTimerLoop();
         }
 
-        // Hardcore Option 3 Probability Spawning
+        // Option 3 Hardcore Spawning
         function startConveyor() {
             setInterval(() => {
                 if (!gameStarted || document.hidden) return;
@@ -675,6 +700,8 @@
                         cash -= nearbyBuyEmoji.cost;
                         addEmojiToVault(nearbyBuyEmoji);
 
+                        playBuySound(); // Plays buy.mp3
+
                         let idx = carpetEmojis.indexOf(nearbyBuyEmoji);
                         if (idx !== -1) carpetEmojis.splice(idx, 1);
 
@@ -704,7 +731,7 @@
                 }
             }
 
-            // Hold F -> Sell (Only if item exists in slot)
+            // Hold F -> Sell (Only if slot contains an item)
             if (nearbyVaultIndex !== -1 && keys['f'] && vault[nearbyVaultIndex]) {
                 fHoldTimer++;
                 if (fHoldTimer >= 120) {
@@ -712,6 +739,8 @@
                     if (item) {
                         let sellPrice = Math.floor((item.cost || 0) * 0.9);
                         cash += sellPrice;
+
+                        playSellSound(); // Plays sell.mp3
 
                         item.count--;
                         if (item.count <= 0) {
@@ -807,8 +836,7 @@
                     if (item.count > 1) {
                         ctx.fillStyle = '#cbd5e1';
                         ctx.font = 'bold 10px sans-serif';
-                        // Positioned in the bottom right corner of the slot
-                        ctx.fillText(`x${item.count}`, vx + 28, vx ? vy + 40 : vy + 40);
+                        ctx.fillText(`x${item.count}`, vx + 31, vy + 40);
                     }
                 } else {
                     ctx.fillStyle = '#475569';
@@ -881,6 +909,7 @@
                 }
             }
 
+            // Only draw prompt bar if slot contains an item OR if player has an active companion to place down
             if (nearbyVaultIndex !== -1 && !emojipediaOpen && !changelogOpen) {
                 let item = vault[nearbyVaultIndex];
                 let col = nearbyVaultIndex % 5;
@@ -888,27 +917,30 @@
                 let vx = 35 + col * 52 + 22;
                 let vy = 100 + row * 52 - 12;
 
-                ctx.fillStyle = '#f43f5e';
-                ctx.fillRect(vx - 60, vy - 15, 120, 24);
-                
-                ctx.fillStyle = '#ffffff';
-                ctx.font = 'bold 9px sans-serif';
-                ctx.textAlign = 'center';
-                if (item) {
-                    let sellPrice = Math.floor((item.cost || 0) * 0.9);
-                    ctx.fillText(`[F] SELL +$${sellPrice} | [R] EQUIP`, vx, vy);
-                } else {
-                    ctx.fillText(companionPet ? `[R] PLACE PET HERE` : `[EMPTY SLOT]`, vx, vy);
-                }
-                ctx.textAlign = 'left';
+                if (item || companionPet) {
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.fillRect(vx - 60, vy - 15, 120, 24);
+                    
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 9px sans-serif';
+                    ctx.textAlign = 'center';
 
-                if (fHoldTimer > 0 && item) {
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.fillRect(vx - 60, vy + 9, (fHoldTimer / 120) * 120, 4);
-                }
-                if (rHoldTimer > 0) {
-                    ctx.fillStyle = '#a855f7';
-                    ctx.fillRect(vx - 60, vy + 9, (rHoldTimer / 90) * 120, 4);
+                    if (item) {
+                        let sellPrice = Math.floor((item.cost || 0) * 0.9);
+                        ctx.fillText(`[F] SELL +$${sellPrice} | [R] EQUIP`, vx, vy);
+                    } else if (companionPet) {
+                        ctx.fillText(`[R] PLACE PET HERE`, vx, vy);
+                    }
+                    ctx.textAlign = 'left';
+
+                    if (fHoldTimer > 0 && item) {
+                        ctx.fillStyle = '#38bdf8';
+                        ctx.fillRect(vx - 60, vy + 9, (fHoldTimer / 120) * 120, 4);
+                    }
+                    if (rHoldTimer > 0) {
+                        ctx.fillStyle = '#a855f7';
+                        ctx.fillRect(vx - 60, vy + 9, (rHoldTimer / 90) * 120, 4);
+                    }
                 }
             }
         }
