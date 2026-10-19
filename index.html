@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steal An Emoji - Ver 1.6</title>
+    <title>Steal An Emoji - Ver 1.61</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
@@ -79,7 +79,7 @@
             
             <!-- Interactive Changelog Button -->
             <button onclick="toggleChangelog()" class="text-xs font-mono text-slate-300 bg-slate-900 hover:bg-slate-700 px-3 py-1.5 rounded border border-blue-500/50 hover:border-blue-400 cursor-pointer transition-all shadow active:scale-95 flex items-center gap-1.5">
-                <span>Ver. 1.6</span>
+                <span>Ver. 1.61</span>
             </button>
         </div>
     </div>
@@ -94,23 +94,26 @@
                 <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
                     <div class="flex items-center gap-3">
                         <h2 class="text-2xl font-black text-white flex items-center gap-2">Changelog:</h2>
-                        <span class="bg-blue-600 text-white text-xs font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wide border border-blue-400 shadow">Major Update</span>
+                        <span class="bg-blue-600 text-white text-xs font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wide border border-blue-400 shadow">Minor Update</span>
                     </div>
                     <button onclick="toggleChangelog()" class="text-slate-400 hover:text-white text-2xl font-bold cursor-pointer px-2">✕</button>
                 </div>
                 
                 <div class="flex flex-col gap-3 text-slate-300 text-sm overflow-y-auto custom-scroll p-1">
-                    <div class="font-bold text-amber-400 text-base">Ver. 1.6 Patch Notes:</div>
+                    <div class="font-bold text-amber-400 text-base">Ver. 1.61 Patch Notes:</div>
                     <ul class="list-disc list-inside space-y-1.5 text-slate-300">
-                        <li><strong class="text-white">Centered Spawn:</strong> Player now spawns in the exact middle of the Red Carpet (`x: 600`).</li>
-                        <li><strong class="text-white">Custom Audio Files:</strong> Integrated `buy.mp3` and `sell.mp3` audio file playback for purchases and sales.</li>
-                        <li><strong class="text-white">Clean Empty Slots:</strong> Empty vault slots no longer display floating prompt boxes or glitched progress bars.</li>
-                        <li><strong class="text-white">Quantity Label Alignment:</strong> Nudged `x(number)` quantity badges further right to align perfectly in slot corners.</li>
+                        <li><strong class="text-white">Emojipedia Progress:</strong> Title header now displays `(Collected Count)/(Total Count)`.</li>
+                        <li><strong class="text-white">Rarer Hardcore Spawn Odds:</strong> Reduced spawn rates for Exotics (0.001%), Mythics (0.01%), Legendaries (0.1%), Epics, and Rares.</li>
+                        <li><strong class="text-white">New Emojis Added:</strong> Added 😏, 😒 to Common, 😬, 😮‍💨 to Uncommon, and 👑 (Crown) as Mythic!</li>
+                        <li><strong class="text-white">Expensive High-Tiers:</strong> Mythics are now extremely rare ($100k cost) with controlled income ($2,500/s).</li>
+                        <li><strong class="text-white">Conveyor Spacing Fix:</strong> Fixed long-play session conveyor clustering with delta-time capped speeds.</li>
+                        <li><strong class="text-white">Pet Stacking Fix:</strong> Unequipping pets into vault slots now automatically merges them into existing stacks (up to x10).</li>
+                        <li><strong class="text-white">Visual Fix:</strong> Repositioned `[NEW]` badge above emoji heads to keep prices clearly readable underneath.</li>
                     </ul>
                 </div>
 
                 <div class="mt-5 pt-3 border-t border-slate-800 text-center text-xs text-slate-500">
-                    Steal An Emoji • Ver. 1.6
+                    Steal An Emoji • Ver. 1.61
                 </div>
             </div>
         </div>
@@ -119,7 +122,9 @@
         <div id="emojipediaModal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center rounded-xl z-20 p-8 pt-12">
             <div class="w-full max-w-3xl bg-slate-900 border-2 border-amber-400/50 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[80vh] mt-6">
                 <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
-                    <h2 class="text-2xl font-black text-amber-400 flex items-center gap-2">📖 EMOJIPEDIA</h2>
+                    <h2 class="text-2xl font-black text-amber-400 flex items-center gap-2">
+                        📖 EMOJIPEDIA <span id="emojipediaTracker" class="text-slate-400 text-base font-bold ml-2">(0/0)</span>
+                    </h2>
                     <button onclick="toggleEmojipedia()" class="text-slate-400 hover:text-white text-2xl font-bold cursor-pointer px-2">✕</button>
                 </div>
                 
@@ -209,8 +214,11 @@
             { emoji: '😉', value: 4, cost: 20,  rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😗', value: 5, cost: 25,  rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😙', value: 5, cost: 25,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😏', value: 6, cost: 30,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😒', value: 7, cost: 35,  rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😐', value: 6, cost: 30,  rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😑', value: 6, cost: 30,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '🙄', value: 7, cost: 35,  rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '🤨', value: 7, cost: 35,  rarity: 'Common', rarityColor: 'text-slate-400' },
 
             // UNCOMMONS (Green)
@@ -232,6 +240,8 @@
             { emoji: '🤔', value: 80,  cost: 400, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '🫡', value: 85,  cost: 425, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '🤥', value: 90,  cost: 450, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😬', value: 95,  cost: 475, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😮‍💨', value: 100, cost: 500, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '🤗', value: 100, cost: 500, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
 
             // RARES (Blue)
@@ -270,6 +280,9 @@
         let vaultTitle = "Player's Vault";
         let cash = 10;
         let cps = 0;
+
+        // Delta time tracking variables
+        let lastFrameTime = performance.now();
 
         // Player spawns at middle of Red Carpet
         let player = {
@@ -417,13 +430,14 @@
             setTimeout(() => modal.style.display = 'none', 300);
 
             gameStarted = true;
+            lastFrameTime = performance.now();
 
             startConveyor();
             startIncomeLoop();
             startGoldenTimerLoop();
         }
 
-        // Option 3 Hardcore Spawning
+        // Hardcore Spawning Logic (Ver 1.61 Rates)
         function startConveyor() {
             setInterval(() => {
                 if (!gameStarted || document.hidden) return;
@@ -435,34 +449,36 @@
                 let targetRarity;
 
                 if (!isGoldenEvent) {
-                    if (roll < 0.0001) {
-                        targetRarity = 'Exotic';    // 0.01%
-                    } else if (roll < 0.0007) {
-                        targetRarity = 'Mythic';    // 0.06%
-                    } else if (roll < 0.0040) {
-                        targetRarity = 'Legendary'; // 0.33%
-                    } else if (roll < 0.0150) {
-                        targetRarity = 'Epic';      // 1.10%
-                    } else if (roll < 0.0600) {
-                        targetRarity = 'Rare';      // 4.50%
-                    } else if (roll < 0.2200) {
-                        targetRarity = 'Uncommon';  // 16.0%
+                    // Normal Carpet Odds
+                    if (roll < 0.00001) {
+                        targetRarity = 'Exotic';    // 0.001%
+                    } else if (roll < 0.0001) {
+                        targetRarity = 'Mythic';    // 0.01%
+                    } else if (roll < 0.001) {
+                        targetRarity = 'Legendary'; // 0.1%
+                    } else if (roll < 0.008) {
+                        targetRarity = 'Epic';      // 0.8%
+                    } else if (roll < 0.035) {
+                        targetRarity = 'Rare';      // 3.5%
+                    } else if (roll < 0.15) {
+                        targetRarity = 'Uncommon';  // 15%
                     } else {
-                        targetRarity = 'Common';    // 78.0%
+                        targetRarity = 'Common';    // ~80.59%
                     }
                 } else {
-                    if (roll < 0.0010) {
-                        targetRarity = 'Exotic';    // 0.10%
-                    } else if (roll < 0.0050) {
-                        targetRarity = 'Mythic';    // 0.40%
-                    } else if (roll < 0.0250) {
-                        targetRarity = 'Legendary'; // 2.00%
-                    } else if (roll < 0.1000) {
-                        targetRarity = 'Epic';      // 7.50%
-                    } else if (roll < 0.3500) {
-                        targetRarity = 'Rare';      // 25.0%
+                    // Golden Carpet Event Odds
+                    if (roll < 0.0001) {
+                        targetRarity = 'Exotic';    // 0.01%
+                    } else if (roll < 0.001) {
+                        targetRarity = 'Mythic';    // 0.1%
+                    } else if (roll < 0.01) {
+                        targetRarity = 'Legendary'; // 1%
+                    } else if (roll < 0.05) {
+                        targetRarity = 'Epic';      // 5%
+                    } else if (roll < 0.20) {
+                        targetRarity = 'Rare';      // 20%
                     } else {
-                        targetRarity = 'Uncommon';  // 65.0%
+                        targetRarity = 'Uncommon';  // ~73.89%
                     }
                 }
 
@@ -476,7 +492,7 @@
                 carpetEmojis.push({
                     x: canvas.width / 2,
                     y: -30,
-                    speed: 1.0,
+                    speed: 60.0, // base 60 pixels per second
                     ...randomChoice
                 });
             }, 2000);
@@ -492,8 +508,8 @@
                 cash += income;
                 cps = income;
 
-                document.getElementById('cashDisplay').innerText = `$${cash}`;
-                document.getElementById('cpsDisplay').innerText = `$${cps}/s`;
+                document.getElementById('cashDisplay').innerText = `$${cash.toLocaleString()}`;
+                document.getElementById('cpsDisplay').innerText = `$${cps.toLocaleString()}/s`;
             }, 1000);
         }
 
@@ -554,6 +570,11 @@
             const container = document.getElementById('emojipediaContent');
             container.innerHTML = '';
 
+            // Update Progress Header Tracker (Collected / Total)
+            let totalMasterCount = masterEmojiList.length;
+            let totalUnlockedCount = unlockedEmojis.size;
+            document.getElementById('emojipediaTracker').innerText = `(${totalUnlockedCount}/${totalMasterCount})`;
+
             const rarities = [
                 { name: 'Common', color: 'text-slate-400' },
                 { name: 'Uncommon', color: 'text-emerald-400' },
@@ -609,7 +630,7 @@
             });
         }
 
-        // Companion Equip & Slot Swap Logic
+        // Companion Equip & Pet Stacking Logic (Bug Fix #2)
         function handleCompanionEquip(targetIndex) {
             try {
                 let oldCompanion = companionPet ? {
@@ -633,21 +654,13 @@
                         }
 
                         if (oldCompanion) {
-                            vault[targetIndex] = {
-                                emoji: oldCompanion.emoji,
-                                value: oldCompanion.value,
-                                cost: oldCompanion.cost,
-                                count: 1
-                            };
+                            // Automatically stack unequipped pet into existing slot if one exists elsewhere
+                            addEmojiToVault(oldCompanion);
                         }
                     } else if (oldCompanion) {
-                        vault[targetIndex] = {
-                            emoji: oldCompanion.emoji,
-                            value: oldCompanion.value,
-                            cost: oldCompanion.cost,
-                            count: 1
-                        };
+                        // Attempt to stack pet into an existing slot first, else place in empty slot
                         companionPet = null;
+                        addEmojiToVault(oldCompanion);
                     }
                 } else if (companionPet) {
                     let tempPet = { ...companionPet };
@@ -659,7 +672,7 @@
             }
         }
 
-        function update() {
+        function update(deltaTime) {
             if (!gameStarted) return;
 
             const emojipediaOpen = !document.getElementById('emojipediaModal').classList.contains('hidden');
@@ -676,7 +689,9 @@
 
             for (let i = carpetEmojis.length - 1; i >= 0; i--) {
                 let e = carpetEmojis[i];
-                e.y += e.speed;
+                
+                // Delta-time based movement (prevents clustering over long play sessions)
+                e.y += e.speed * deltaTime;
 
                 let dist = Math.hypot(player.x - e.x, player.y - e.y);
                 if (dist < 65 && dist < closestDist) {
@@ -707,7 +722,7 @@
 
                         eHoldTimer = 0;
                         nearbyBuyEmoji = null;
-                        document.getElementById('cashDisplay').innerText = `$${cash}`;
+                        document.getElementById('cashDisplay').innerText = `$${cash.toLocaleString()}`;
                     }
                 }
             } else {
@@ -749,7 +764,7 @@
 
                         fHoldTimer = 0;
                         nearbyVaultIndex = -1;
-                        document.getElementById('cashDisplay').innerText = `$${cash}`;
+                        document.getElementById('cashDisplay').innerText = `$${cash.toLocaleString()}`;
                     }
                 }
             } else {
@@ -849,14 +864,16 @@
                 ctx.font = '36px sans-serif';
                 ctx.fillText(e.emoji, e.x - 18, e.y + 12);
 
+                // Price Badge below emoji
                 ctx.fillStyle = '#10b981';
                 ctx.font = 'bold 13px sans-serif';
-                ctx.fillText(`$${e.cost}`, e.x - 14, e.y + 32);
+                ctx.fillText(`$${e.cost.toLocaleString()}`, e.x - 14, e.y + 32);
 
+                // [NEW] Badge repositioned ABOVE emoji head
                 if (!unlockedEmojis.has(e.emoji)) {
                     ctx.fillStyle = '#22c55e';
-                    ctx.font = 'black 10px sans-serif';
-                    ctx.fillText('[NEW]', e.x + 16, e.y + 32);
+                    ctx.font = 'black 11px sans-serif';
+                    ctx.fillText('[NEW]', e.x - 14, e.y - 18);
                 }
             });
 
@@ -909,7 +926,7 @@
                 }
             }
 
-            // Only draw prompt bar if slot contains an item OR if player has an active companion to place down
+            // Draw prompt bar if slot contains an item OR if player has an active companion to place down
             if (nearbyVaultIndex !== -1 && !emojipediaOpen && !changelogOpen) {
                 let item = vault[nearbyVaultIndex];
                 let col = nearbyVaultIndex % 5;
@@ -927,7 +944,7 @@
 
                     if (item) {
                         let sellPrice = Math.floor((item.cost || 0) * 0.9);
-                        ctx.fillText(`[F] SELL +$${sellPrice} | [R] EQUIP`, vx, vy);
+                        ctx.fillText(`[F] SELL +$${sellPrice.toLocaleString()} | [R] EQUIP`, vx, vy);
                     } else if (companionPet) {
                         ctx.fillText(`[R] PLACE PET HERE`, vx, vy);
                     }
@@ -945,9 +962,15 @@
             }
         }
 
-        function loop() {
+        function loop(timestamp) {
             try {
-                update();
+                let deltaTime = (timestamp - lastFrameTime) / 1000;
+                lastFrameTime = timestamp;
+                
+                // Cap delta time to prevent massive jumps when switching tabs
+                if (isNaN(deltaTime) || deltaTime > 0.1) deltaTime = 0.016;
+
+                update(deltaTime);
                 draw();
             } catch (e) {
                 console.error("Game loop caught error safely:", e);
@@ -955,7 +978,7 @@
             requestAnimationFrame(loop);
         }
 
-        loop();
+        requestAnimationFrame(loop);
     </script>
 </body>
 </html>
