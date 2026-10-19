@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steal An Emoji - Ver 1.42</title>
+    <title>Steal An Emoji - Ver 1.52</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
@@ -39,17 +39,29 @@
 
     <!-- Top Info Bar -->
     <div class="w-[1200px] flex justify-between items-center mb-2 px-6 py-2.5 bg-slate-800/90 rounded-xl border border-slate-700 shadow-xl backdrop-blur-md relative z-30">
+        <!-- Left Section: Emojipedia, Trade, Log In -->
         <div class="flex items-center gap-3">
             <button onclick="toggleEmojipedia()" class="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-4 py-1.5 rounded-lg border border-amber-300 shadow cursor-pointer transition-all active:scale-95">
                 <span>📖</span> Emojipedia
             </button>
 
+            <!-- Disabled Trade Button -->
             <div class="relative group">
                 <button disabled class="flex items-center gap-2 bg-slate-700 text-slate-400 font-bold px-4 py-1.5 rounded-lg border border-slate-600 opacity-60 cursor-not-allowed">
                     <span>🔄</span> Trade
                 </button>
                 <div class="absolute left-0 top-full mt-2 hidden group-hover:block bg-slate-900 text-amber-300 text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-400/40 shadow-2xl whitespace-nowrap z-50 pointer-events-none">
                     Trades are coming in a later update.
+                </div>
+            </div>
+
+            <!-- Disabled Log In Button -->
+            <div class="relative group">
+                <button disabled class="flex items-center gap-2 bg-slate-700 text-slate-400 font-bold px-4 py-1.5 rounded-lg border border-slate-600 opacity-60 cursor-not-allowed">
+                    Log In
+                </button>
+                <div class="absolute left-0 top-full mt-2 hidden group-hover:block bg-slate-900 text-amber-300 text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-400/40 shadow-2xl whitespace-nowrap z-50 pointer-events-none">
+                    Accounts are coming in a later update.
                 </div>
             </div>
         </div>
@@ -60,10 +72,15 @@
             <span id="goldenTimerDisplay" class="text-amber-400 font-extrabold text-sm">5:00</span>
         </div>
 
+        <!-- Right Section: Cash, Income & Version Badge -->
         <div class="flex items-center gap-6 text-xl font-bold">
             <div>Cash: <span id="cashDisplay" class="text-emerald-400">$10</span></div>
             <div>Income: <span id="cpsDisplay" class="text-emerald-400">$0/s</span></div>
-            <div class="text-xs font-mono text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-700">Ver. 1.42</div>
+            
+            <!-- Interactive Changelog Button -->
+            <button onclick="toggleChangelog()" class="text-xs font-mono text-slate-300 bg-slate-900 hover:bg-slate-700 px-3 py-1.5 rounded border border-blue-500/50 hover:border-blue-400 cursor-pointer transition-all shadow active:scale-95 flex items-center gap-1.5">
+                <span>Ver. 1.52</span>
+            </button>
         </div>
     </div>
 
@@ -71,9 +88,36 @@
     <div class="relative">
         <canvas id="gameCanvas" width="1200" height="700"></canvas>
 
+        <!-- Changelog Modal -->
+        <div id="changelogModal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center rounded-xl z-20 p-6">
+            <div class="w-full max-w-2xl bg-slate-900 border-2 border-blue-500/80 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[85vh]">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-2xl font-black text-white flex items-center gap-2">Changelog:</h2>
+                        <span class="bg-blue-600 text-white text-xs font-extrabold px-2.5 py-1 rounded-md uppercase tracking-wide border border-blue-400 shadow">Minor Update</span>
+                    </div>
+                    <button onclick="toggleChangelog()" class="text-slate-400 hover:text-white text-2xl font-bold cursor-pointer px-2">✕</button>
+                </div>
+                
+                <div class="flex flex-col gap-3 text-slate-300 text-sm overflow-y-auto custom-scroll p-1">
+                    <div class="font-bold text-amber-400 text-base">Ver. 1.52 Patch Notes:</div>
+                    <ul class="list-disc list-inside space-y-1.5 text-slate-300">
+                        <li><strong class="text-white">New Emoji Added:</strong> Added 🤗 as an Uncommon emoji ($100/s income, $500 cost).</li>
+                        <li><strong class="text-white">Account Preview Button:</strong> Added a grayed-out "Log In" button in the top bar with preview hover info.</li>
+                        <li><strong class="text-white">Modal Polish:</strong> Lowered and padded the Emojipedia window so titles stay fully visible under the header bar.</li>
+                        <li><strong class="text-white">Bug Fixes:</strong> Resolved state holding glitches on empty slots and pet swapping routines.</li>
+                    </ul>
+                </div>
+
+                <div class="mt-5 pt-3 border-t border-slate-800 text-center text-xs text-slate-500">
+                    Steal An Emoji • Ver. 1.52
+                </div>
+            </div>
+        </div>
+
         <!-- Emojipedia Modal -->
-        <div id="emojipediaModal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center rounded-xl z-20 p-6">
-            <div class="w-full max-w-3xl bg-slate-900 border-2 border-amber-400/50 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[85vh]">
+        <div id="emojipediaModal" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center rounded-xl z-20 p-8 pt-12">
+            <div class="w-full max-w-3xl bg-slate-900 border-2 border-amber-400/50 rounded-2xl p-6 shadow-2xl flex flex-col max-h-[80vh] mt-6">
                 <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
                     <h2 class="text-2xl font-black text-amber-400 flex items-center gap-2">📖 EMOJIPEDIA</h2>
                     <button onclick="toggleEmojipedia()" class="text-slate-400 hover:text-white text-2xl font-bold cursor-pointer px-2">✕</button>
@@ -132,7 +176,7 @@
         const ctx = canvas.getContext('2d');
 
         const masterEmojiList = [
-            // COMMONS
+            // COMMONS (Gray)
             { emoji: '😀', value: 1, cost: 5,   rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '🙂', value: 1, cost: 5,   rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😊', value: 2, cost: 10,  rarity: 'Common', rarityColor: 'text-slate-400' },
@@ -143,34 +187,48 @@
             { emoji: '😉', value: 4, cost: 20,  rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😗', value: 5, cost: 25,  rarity: 'Common', rarityColor: 'text-slate-400' },
             { emoji: '😙', value: 5, cost: 25,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😐', value: 6, cost: 30,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '😑', value: 6, cost: 30,  rarity: 'Common', rarityColor: 'text-slate-400' },
+            { emoji: '🤨', value: 7, cost: 35,  rarity: 'Common', rarityColor: 'text-slate-400' },
 
-            // UNCOMMONS
-            { emoji: '🤣', value: 8,  cost: 40,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '🙃', value: 10, cost: 50,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '🫠', value: 12, cost: 60,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😇', value: 15, cost: 75,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '🥰', value: 20, cost: 100, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😍', value: 25, cost: 125, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😅', value: 30, cost: 150, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😂', value: 35, cost: 175, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😚', value: 40, cost: 200, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '🥲', value: 45, cost: 225, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😋', value: 50, cost: 250, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😛', value: 55, cost: 275, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😝', value: 60, cost: 300, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '🤭', value: 65, cost: 325, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '🫢', value: 70, cost: 350, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            // UNCOMMONS (Green)
+            { emoji: '🤣', value: 8,   cost: 40,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🙃', value: 10,  cost: 50,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🫠', value: 12,  cost: 60,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😇', value: 15,  cost: 75,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🥰', value: 20,  cost: 100, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😍', value: 25,  cost: 125, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😅', value: 30,  cost: 150, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😂', value: 35,  cost: 175, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😚', value: 40,  cost: 200, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🥲', value: 45,  cost: 225, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😋', value: 50,  cost: 250, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😛', value: 55,  cost: 275, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '😝', value: 60,  cost: 300, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🤭', value: 65,  cost: 325, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🫢', value: 70,  cost: 350, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🤫', value: 75,  cost: 375, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🤔', value: 80,  cost: 400, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🫡', value: 85,  cost: 425, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🤥', value: 90,  cost: 450, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
+            { emoji: '🤗', value: 100, cost: 500, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
 
-            // RARES
+            // RARES (Blue)
             { emoji: '🤩', value: 200, cost: 1000, rarity: 'Rare', rarityColor: 'text-sky-400' },
             { emoji: '😘', value: 250, cost: 1250, rarity: 'Rare', rarityColor: 'text-sky-400' },
             { emoji: '😜', value: 300, cost: 1500, rarity: 'Rare', rarityColor: 'text-sky-400' },
             { emoji: '🫣', value: 350, cost: 1750, rarity: 'Rare', rarityColor: 'text-sky-400' },
+            { emoji: '😶', value: 400, cost: 2000, rarity: 'Rare', rarityColor: 'text-sky-400' },
+            { emoji: '🫨', value: 450, cost: 2250, rarity: 'Rare', rarityColor: 'text-sky-400' },
 
-            // EPICS
+            // EPICS (Purple)
             { emoji: '🤑', value: 500, cost: 2500, rarity: 'Epic', rarityColor: 'text-purple-400' },
             { emoji: '🤪', value: 600, cost: 3000, rarity: 'Epic', rarityColor: 'text-purple-400' },
-            { emoji: '🤐', value: 700, cost: 3500, rarity: 'Epic', rarityColor: 'text-purple-400' }
+            { emoji: '🤐', value: 700, cost: 3500, rarity: 'Epic', rarityColor: 'text-purple-400' },
+
+            // LEGENDARIES (Orange)
+            { emoji: '🫥', value: 1200, cost: 6000, rarity: 'Legendary', rarityColor: 'text-orange-400' },
+            { emoji: '😶‍🌫️', value: 1500, cost: 7500, rarity: 'Legendary', rarityColor: 'text-orange-400' }
         ];
 
         let unlockedEmojis = new Set();
@@ -202,7 +260,7 @@
         let companionPet = null;
 
         let keys = {};
-        // 50 total capacity (5 cols x 10 rows)
+        // 50 total slots in vault
         let vault = [];
         let carpetEmojis = [];
         
@@ -234,8 +292,9 @@
 
         canvas.addEventListener('click', e => {
             if (!gameStarted) return;
-            const modalOpen = !document.getElementById('emojipediaModal').classList.contains('hidden');
-            if (modalOpen) return;
+            const emojipediaOpen = !document.getElementById('emojipediaModal').classList.contains('hidden');
+            const changelogOpen = !document.getElementById('changelogModal').classList.contains('hidden');
+            if (emojipediaOpen || changelogOpen) return;
 
             const rect = canvas.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
@@ -304,7 +363,6 @@
                 }
             }
 
-            // Find first empty slot in 50 capacity array
             for (let i = 0; i < 50; i++) {
                 if (!vault[i]) {
                     vault[i] = {
@@ -342,33 +400,50 @@
             startGoldenTimerLoop();
         }
 
+        // Hardcore Option 3 Probability Spawning
         function startConveyor() {
             setInterval(() => {
                 if (!gameStarted || document.hidden) return;
                 const emojipediaOpen = !document.getElementById('emojipediaModal').classList.contains('hidden');
-                if (emojipediaOpen) return;
+                const changelogOpen = !document.getElementById('changelogModal').classList.contains('hidden');
+                if (emojipediaOpen || changelogOpen) return;
                 
                 let roll = Math.random();
-                let chosenPool;
+                let targetRarity;
 
                 if (!isGoldenEvent) {
-                    if (roll < 0.85) {
-                        chosenPool = masterEmojiList.filter(e => e.rarity === 'Common');
-                    } else if (roll < 0.95) {
-                        chosenPool = masterEmojiList.filter(e => e.rarity === 'Uncommon');
+                    if (roll < 0.0001) {
+                        targetRarity = 'Exotic';    // 0.01%
+                    } else if (roll < 0.0007) {
+                        targetRarity = 'Mythic';    // 0.06%
+                    } else if (roll < 0.0040) {
+                        targetRarity = 'Legendary'; // 0.33%
+                    } else if (roll < 0.0150) {
+                        targetRarity = 'Epic';      // 1.10%
+                    } else if (roll < 0.0600) {
+                        targetRarity = 'Rare';      // 4.50%
+                    } else if (roll < 0.2200) {
+                        targetRarity = 'Uncommon';  // 16.0%
                     } else {
-                        chosenPool = masterEmojiList.filter(e => e.rarity === 'Rare');
+                        targetRarity = 'Common';    // 78.0%
                     }
                 } else {
-                    if (roll < 0.85) {
-                        chosenPool = masterEmojiList.filter(e => e.rarity === 'Uncommon');
-                    } else if (roll < 0.95) {
-                        chosenPool = masterEmojiList.filter(e => e.rarity === 'Rare');
+                    if (roll < 0.0010) {
+                        targetRarity = 'Exotic';    // 0.10%
+                    } else if (roll < 0.0050) {
+                        targetRarity = 'Mythic';    // 0.40%
+                    } else if (roll < 0.0250) {
+                        targetRarity = 'Legendary'; // 2.00%
+                    } else if (roll < 0.1000) {
+                        targetRarity = 'Epic';      // 7.50%
+                    } else if (roll < 0.3500) {
+                        targetRarity = 'Rare';      // 25.0%
                     } else {
-                        chosenPool = masterEmojiList.filter(e => e.rarity === 'Epic');
+                        targetRarity = 'Uncommon';  // 65.0%
                     }
                 }
 
+                let chosenPool = masterEmojiList.filter(e => e.rarity === targetRarity);
                 if (!chosenPool || chosenPool.length === 0) {
                     chosenPool = masterEmojiList.filter(e => e.rarity === 'Common');
                 }
@@ -443,6 +518,15 @@
             }
         }
 
+        function toggleChangelog() {
+            const modal = document.getElementById('changelogModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
         function renderEmojipedia() {
             const container = document.getElementById('emojipediaContent');
             container.innerHTML = '';
@@ -451,7 +535,10 @@
                 { name: 'Common', color: 'text-slate-400' },
                 { name: 'Uncommon', color: 'text-emerald-400' },
                 { name: 'Rare', color: 'text-sky-400' },
-                { name: 'Epic', color: 'text-purple-400' }
+                { name: 'Epic', color: 'text-purple-400' },
+                { name: 'Legendary', color: 'text-orange-400' },
+                { name: 'Mythic', color: 'text-yellow-400' },
+                { name: 'Exotic', color: 'text-cyan-300' }
             ];
 
             rarities.forEach(r => {
@@ -553,7 +640,8 @@
             if (!gameStarted) return;
 
             const emojipediaOpen = !document.getElementById('emojipediaModal').classList.contains('hidden');
-            if (emojipediaOpen) return;
+            const changelogOpen = !document.getElementById('changelogModal').classList.contains('hidden');
+            if (emojipediaOpen || changelogOpen) return;
 
             if ((keys['w'] || keys['arrowup']) && player.y > 35) { player.y -= player.speed; }
             if ((keys['s'] || keys['arrowdown']) && player.y < canvas.height - 35) { player.y += player.speed; }
@@ -583,7 +671,7 @@
                 let existingItem = vault.find(v => v && v.emoji === nearbyBuyEmoji.emoji);
                 let isTypeMaxed = existingItem && existingItem.count >= 10;
 
-                if (totalCount < 50 && !isTypeMaxed && cash >= nearbyBuyEmoji.cost) {
+                if (totalCount < 100 && !isTypeMaxed && cash >= nearbyBuyEmoji.cost) {
                     eHoldTimer++;
                     if (eHoldTimer >= 60) {
                         cash -= nearbyBuyEmoji.cost;
@@ -618,8 +706,8 @@
                 }
             }
 
-            // Hold F -> Sell
-            if (nearbyVaultIndex !== -1 && keys['f']) {
+            // Hold F -> Sell (Only if item exists in slot)
+            if (nearbyVaultIndex !== -1 && keys['f'] && vault[nearbyVaultIndex]) {
                 fHoldTimer++;
                 if (fHoldTimer >= 120) {
                     let item = vault[nearbyVaultIndex];
@@ -649,6 +737,7 @@
                         rEquipTriggered = true;
                         handleCompanionEquip(nearbyVaultIndex);
                         rHoldTimer = 0;
+                        fHoldTimer = 0; // Explicitly reset sell progress timer
                     }
                 }
             } else {
@@ -698,9 +787,9 @@
             ctx.font = 'bold 15px sans-serif';
             ctx.fillText(`🛡️ ${vaultTitle.toUpperCase()}`, 35, 68);
             
-            ctx.fillStyle = totalCount >= 50 ? '#ef4444' : '#94a3b8';
+            ctx.fillStyle = totalCount >= 100 ? '#ef4444' : '#94a3b8';
             ctx.font = 'bold 11px sans-serif';
-            ctx.fillText(`Capacity: ${totalCount}/50`, 35, 84);
+            ctx.fillText(`Capacity: ${totalCount}/100`, 35, 84);
 
             // Render 50 slots
             for (let i = 0; i < 50; i++) {
@@ -755,12 +844,13 @@
             }
 
             const emojipediaOpen = !document.getElementById('emojipediaModal').classList.contains('hidden');
+            const changelogOpen = !document.getElementById('changelogModal').classList.contains('hidden');
 
-            if (nearbyBuyEmoji && !emojipediaOpen) {
+            if (nearbyBuyEmoji && !emojipediaOpen && !changelogOpen) {
                 let totalCount = getTotalEmojiCount();
                 let existingItem = vault.find(v => v && v.emoji === nearbyBuyEmoji.emoji);
                 let isTypeMaxed = existingItem && existingItem.count >= 10;
-                let isCapReached = totalCount >= 50;
+                let isCapReached = totalCount >= 100;
                 let afford = cash >= nearbyBuyEmoji.cost;
 
                 let promptText = 'HOLD [E] BUY';
@@ -792,7 +882,7 @@
                 }
             }
 
-            if (nearbyVaultIndex !== -1 && !emojipediaOpen) {
+            if (nearbyVaultIndex !== -1 && !emojipediaOpen && !changelogOpen) {
                 let item = vault[nearbyVaultIndex];
                 let col = nearbyVaultIndex % 5;
                 let row = Math.floor(nearbyVaultIndex / 5);
@@ -813,7 +903,7 @@
                 }
                 ctx.textAlign = 'left';
 
-                if (fHoldTimer > 0) {
+                if (fHoldTimer > 0 && item) {
                     ctx.fillStyle = '#38bdf8';
                     ctx.fillRect(vx - 60, vy + 9, (fHoldTimer / 120) * 120, 4);
                 }
