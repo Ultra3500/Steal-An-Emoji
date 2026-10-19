@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Steal An Emoji - Ver 1.52</title>
+    <title>Steal An Emoji - Ver 1.53</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
@@ -79,7 +79,7 @@
             
             <!-- Interactive Changelog Button -->
             <button onclick="toggleChangelog()" class="text-xs font-mono text-slate-300 bg-slate-900 hover:bg-slate-700 px-3 py-1.5 rounded border border-blue-500/50 hover:border-blue-400 cursor-pointer transition-all shadow active:scale-95 flex items-center gap-1.5">
-                <span>Ver. 1.52</span>
+                <span>Ver. 1.53</span>
             </button>
         </div>
     </div>
@@ -100,17 +100,15 @@
                 </div>
                 
                 <div class="flex flex-col gap-3 text-slate-300 text-sm overflow-y-auto custom-scroll p-1">
-                    <div class="font-bold text-amber-400 text-base">Ver. 1.52 Patch Notes:</div>
+                    <div class="font-bold text-amber-400 text-base">Ver. 1.53 Patch Notes:</div>
                     <ul class="list-disc list-inside space-y-1.5 text-slate-300">
-                        <li><strong class="text-white">New Emoji Added:</strong> Added 🤗 as an Uncommon emoji ($100/s income, $500 cost).</li>
-                        <li><strong class="text-white">Account Preview Button:</strong> Added a grayed-out "Log In" button in the top bar with preview hover info.</li>
-                        <li><strong class="text-white">Modal Polish:</strong> Lowered and padded the Emojipedia window so titles stay fully visible under the header bar.</li>
-                        <li><strong class="text-white">Bug Fixes:</strong> Resolved state holding glitches on empty slots and pet swapping routines.</li>
+                        <li><strong class="text-white">Rarity Rebalance:</strong> Halo emoji (😇) promoted from Uncommon to <span class="text-sky-400 font-bold">Rare</span>.</li>
+                        <li><strong class="text-white">UI Badge Fix:</strong> Shifted vault slot stack quantity numbers (`x2`, `x3`, etc.) to the bottom-right corner.</li>
                     </ul>
                 </div>
 
                 <div class="mt-5 pt-3 border-t border-slate-800 text-center text-xs text-slate-500">
-                    Steal An Emoji • Ver. 1.52
+                    Steal An Emoji • Ver. 1.53
                 </div>
             </div>
         </div>
@@ -195,7 +193,6 @@
             { emoji: '🤣', value: 8,   cost: 40,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '🙃', value: 10,  cost: 50,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '🫠', value: 12,  cost: 60,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
-            { emoji: '😇', value: 15,  cost: 75,  rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '🥰', value: 20,  cost: 100, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '😍', value: 25,  cost: 125, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
             { emoji: '😅', value: 30,  cost: 150, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
@@ -214,6 +211,7 @@
             { emoji: '🤗', value: 100, cost: 500, rarity: 'Uncommon', rarityColor: 'text-emerald-400' },
 
             // RARES (Blue)
+            { emoji: '😇', value: 150, cost: 750,  rarity: 'Rare', rarityColor: 'text-sky-400' },
             { emoji: '🤩', value: 200, cost: 1000, rarity: 'Rare', rarityColor: 'text-sky-400' },
             { emoji: '😘', value: 250, cost: 1250, rarity: 'Rare', rarityColor: 'text-sky-400' },
             { emoji: '😜', value: 300, cost: 1500, rarity: 'Rare', rarityColor: 'text-sky-400' },
@@ -571,7 +569,7 @@
                         card.innerHTML = `
                             <span class="text-3xl my-1">${item.emoji}</span>
                             ${currentCount > 0 ? `<span class="absolute top-1 right-1.5 text-emerald-400 text-[10px] font-black">✓</span>` : ''}
-                            ${currentCount > 1 ? `<span class="absolute bottom-1 right-[22%] text-slate-300 text-[10px] font-black translate-x-1">x${currentCount}</span>` : ''}
+                            ${currentCount > 1 ? `<span class="absolute bottom-1 right-1.5 text-slate-300 text-[10px] font-black">x${currentCount}</span>` : ''}
                         `;
                     } else {
                         card.innerHTML = `
@@ -737,7 +735,7 @@
                         rEquipTriggered = true;
                         handleCompanionEquip(nearbyVaultIndex);
                         rHoldTimer = 0;
-                        fHoldTimer = 0; // Explicitly reset sell progress timer
+                        fHoldTimer = 0;
                     }
                 }
             } else {
@@ -809,7 +807,8 @@
                     if (item.count > 1) {
                         ctx.fillStyle = '#cbd5e1';
                         ctx.font = 'bold 10px sans-serif';
-                        ctx.fillText(`x${item.count}`, vx + 20, vy + 40);
+                        // Positioned in the bottom right corner of the slot
+                        ctx.fillText(`x${item.count}`, vx + 28, vx ? vy + 40 : vy + 40);
                     }
                 } else {
                     ctx.fillStyle = '#475569';
